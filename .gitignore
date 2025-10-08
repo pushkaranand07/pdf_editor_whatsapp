@@ -1,0 +1,5 @@
+Backend/uploads/
+
+env
+Backend/.env
+*.txt

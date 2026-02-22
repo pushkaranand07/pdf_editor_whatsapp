@@ -49,27 +49,39 @@ const PDFEditor = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: false });
+    if (!ctx) return;
+    
     const rect = canvas.parentElement.getBoundingClientRect();
     
-    canvas.width = rect.width;
-    canvas.height = rect.height;
+    // Set canvas resolution with device pixel ratio for crisp rendering
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    
+    // Scale context to match device pixel ratio
+    ctx.scale(dpr, dpr);
+    
+    // Enable high quality image rendering
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
 
     // Clear canvas
     ctx.fillStyle = 'white';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, rect.width, rect.height);
 
     // Draw page image if available
     if (pageImage) {
       const img = imageRef.current;
       img.onload = () => {
         // Calculate dimensions to fit canvas while maintaining aspect ratio
-        const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
+        const scale = Math.min(rect.width / img.width, rect.height / img.height);
         const width = img.width * scale;
         const height = img.height * scale;
-        const x = (canvas.width - width) / 2;
-        const y = (canvas.height - height) / 2;
+        const x = (rect.width - width) / 2;
+        const y = (rect.height - height) / 2;
         
+        // Draw image with high quality settings
         ctx.drawImage(img, x, y, width, height);
         
         // Store image dimensions for drawing coordinates
@@ -1203,20 +1215,20 @@ const PDFEditor = () => {
         </div>
 
         {/* Canvas Area */}
-        <div className="flex-1 flex items-center justify-center p-8 overflow-hidden">
+        <div className="flex-1 flex items-center justify-center p-8 overflow-auto">
           <div 
-            className="bg-white rounded-lg shadow-xl border border-gray-200 relative overflow-hidden flex items-center justify-center"
+            className="bg-white rounded-lg shadow-xl border border-gray-200 relative overflow-hidden flex items-center justify-center flex-shrink-0"
             style={{
-              width: `${800 * (zoom / 100)}px`,
-              height: `${600 * (zoom / 100)}px`,
-              maxWidth: '90%',
-              maxHeight: '90%'
+              width: `${1200 * (zoom / 100)}px`,
+              height: `${1600 * (zoom / 100)}px`,
+              maxWidth: '95%',
+              maxHeight: '95%'
             }}
           >
             <canvas
               ref={canvasRef}
               className="w-full h-full"
-              style={{ cursor: currentTool === 'eraser' ? 'grab' : 'crosshair' }}
+              style={{ cursor: currentTool === 'eraser' ? 'grab' : 'crosshair', display: 'block' }}
               onMouseDown={handleMouseDown}
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUp}

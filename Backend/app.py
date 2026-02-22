@@ -660,7 +660,7 @@ class DocumentSession:
         try:
             if self.document_type == 'pdf' and PDF_AVAILABLE and self.document:
                 page = self.document.load_page(page_num)
-                zoom = 2.0  # High quality
+                zoom = 5.0  # 4K quality (5x zoom for ultra-high resolution)
                 mat = fitz.Matrix(zoom, zoom)
                 pix = page.get_pixmap(matrix=mat, alpha=False)
                 
